@@ -1,0 +1,261 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+    <head>
+    </head>
+    <script language="JavaScript" type="text/javascript">
+        <!--The Clear BSD License 
+        
+        Copyright (c) – 2014, NetApp, Inc.  All rights reserved. 
+        
+        Redistribution and use in source and binary forms, with or without modification, are
+        permitted (subject to the limitations in the disclaimer below) provided that the
+        following conditions are met: 
+            * Redistributions of source code must retain the above copyright notice, this
+              list of conditions and the following disclaimer. 
+            * Redistributions in binary form must reproduce the above copyright notice, this
+              list of conditions and the following disclaimer in the documentation and/or
+              other materials provided with the distribution. 
+            * Neither the name of NetApp, Inc. nor the names of its contributors may be used
+              to endorse or promote products derived from this software without specific prior
+              written permission. 
+
+        NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY THIS LICENSE.
+        THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+        EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+        MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+        THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+        SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+        PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+        INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+        STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+        THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+        -->
+
+        // Inline icon images for self-contained operation. Public domain icons from http://www.apache.org/icons/
+        var deleteImage = "data:image/gif;base64,R0lGODlhEAAQAPQAAMwiAM4lA9IpB9UuDNo0Et46GONBH+hHJe1OLPFUMv9VM/ZaOP9aOPlfPf9gPv1jQf9mRP9oRv9xT/97Wf+EYv+ObP+Tcf+Xdf+fff+lg/+qiAAAAAAAAAAAAAAAAAAAACH5BAEAABsALAAAAAAQABAAAAVx4CaOZDlCkCmi4/Noj/m6YqNlWkPauC4uGIxm8dMEiaTE5aJJJDTLhApRqWg0VYRKdKB4KYetyGCZTCwGcUEjaUs0BRVBE4kQCHUNoTTQOBwDIgN/GoEiAhoMDAIkAooajBsBAQoBJpSTIwAAW5tiYiEAOw==";
+        var folderImage = "data:image/gif;base64,R0lGODlhFAAWAMIAAP/////Mmcz//5lmMzMzMwAAAAAAAAAAACH+TlRoaXMgYXJ0IGlzIGluIHRoZSBwdWJsaWMgZG9tYWluLiBLZXZpbiBIdWdoZXMsIGtldmluaEBlaXQuY29tLCBTZXB0ZW1iZXIgMTk5NQAh+QQBAAACACwAAAAAFAAWAAADVCi63P4wyklZufjOErrvRcR9ZKYpxUB6aokGQyzHKxyO9RoTV54PPJyPBewNSUXhcWc8soJOIjTaSVJhVphWxd3CeILUbDwmgMPmtHrNIyxM8Iw7AQA7";
+        var parentImage = "data:image/gif;base64,R0lGODlhFAAWAMIAAP///8z//5mZmWZmZjMzMwAAAAAAAAAAACH+TlRoaXMgYXJ0IGlzIGluIHRoZSBwdWJsaWMgZG9tYWluLiBLZXZpbiBIdWdoZXMsIGtldmluaEBlaXQuY29tLCBTZXB0ZW1iZXIgMTk5NQAh+QQBAAABACwAAAAAFAAWAAADSxi63P4jEPJqEDNTu6LO3PVpnDdOFnaCkHQGBTcqRRxuWG0v+5LrNUZQ8QPqeMakkaZsFihOpyDajMCoOoJAGNVWkt7QVfzokc+LBAA7";
+        var fileImage = "data:image/gif;base64,R0lGODlhFAAWAMIAAP///8z//5mZmTMzMwAAAAAAAAAAAAAAACH+TlRoaXMgYXJ0IGlzIGluIHRoZSBwdWJsaWMgZG9tYWluLiBLZXZpbiBIdWdoZXMsIGtldmluaEBlaXQuY29tLCBTZXB0ZW1iZXIgMTk5NQAh+QQBAAABACwAAAAAFAAWAAADWDi6vPEwDECrnSO+aTvPEddVIriN1wVxROtSxBDPJwq7bo23luALhJqt8gtKbrsXBSgcEo2spBLAPDp7UKT02bxWRdrp94rtbpdZMrrr/A5+8LhPFpHajQkAOw==";
+        var newListing = "";
+        
+        onload = function()
+        {
+            var filesUpload = document.getElementById("files-upload");
+                            
+            // Set the index to the current URI
+            document.getElementById('cdmi_location').value = document.URL.substring(0, document.URL.lastIndexOf("/")) + "/";
+            set_documenttitle();
+			
+			// Perform a CDMI container GET to populate the "cdmi_listing" div in the HTML
+			list_container();
+        
+            filesUpload.addEventListener("change", function () {
+                traverseFiles(this.files);
+            }, false);
+        }
+
+        function list_container()
+        {
+			var url = "";
+			
+			set_documenttitle();
+            url = document.getElementById('cdmi_location').value;
+			
+			// Perform an AJAX request to perform a CDMI container or capabilities GET
+			request = new XMLHttpRequest();
+            request.open("GET", url, true);
+            request.setRequestHeader("Accept", "*/*");
+            request.setRequestHeader("X-CDMI-Specification-Version", "1.0.1");
+            request.onreadystatechange = request.onreadystatechange = function()
+            {
+                process_results(request)
+            }
+            request.send("");
+        }
+        
+        function extract_uri(url)
+        {
+            var basepath = url.split("//");
+            path = basepath[1].substring(basepath[1].indexOf("/"), basepath[1].length);
+            return path
+        }
+        
+        function set_documenttitle()
+        {
+            document.title = "Index of " + extract_uri(document.getElementById('cdmi_location').value);
+        }
+
+        // Process the results of the CDMI GET
+        function process_results(theresult)
+        {
+            if(theresult.readyState == 3)
+            {
+                cdmi_container = JSON.parse(theresult.responseText);
+
+                newListing = '<table width="660"><tr><th width="20"></th><th width="250" align="left">Name</th><th width="200" align="left">Last Modified</th><th width="100" align="left">Size</th><th width="18" align="left"></th></tr>';
+                print_parent(cdmi_container);
+                cdmi_container.children.forEach(inspect_child);
+                newListing = newListing + '</th></tr></table>';
+                
+                document.getElementById('cdmi_listing').innerHTML = newListing;
+            }
+        }
+
+        // Render a "Parent Directory" entry if not at "/"
+		function print_parent(cdmi_container)
+        {
+            var base_path = document.getElementById('cdmi_location').value;
+            var child_entry = "";
+			
+            if(cdmi_container.parentURI && cdmi_container.parentURI != "")
+            {
+                var parent_path = base_path.substring(0, base_path.lastIndexOf("/"));
+                parent_path = parent_path.substring(0, parent_path.lastIndexOf("/")) + "/";
+                
+                child_entry = '<tr><td valign="top" width="20"><img src="' + parentImage + '"> </td><td valign="top"><a href="#" onclick=\'update_location(\"' + parent_path + '\"); return false\'>Parent Directory</a></td></tr>'
+                   
+                newListing = newListing + child_entry;
+            }
+        }
+        
+        // Get information about a child
+        function inspect_child(child, index)
+        {
+			var url = "";
+            var request;
+			
+			set_documenttitle();
+            url = document.getElementById('cdmi_location').value;
+			
+			// Perform an AJAX request to perform a CDMI container or capabilities GET
+			request = new XMLHttpRequest();
+            request.open("GET", url + child + "?objectName;metadata", true);
+            request.setRequestHeader("Accept", "*/*");
+            request.setRequestHeader("X-CDMI-Specification-Version", "1.0.1");
+            request.onreadystatechange = request.onreadystatechange = function()
+            {
+                print_child(request)
+            }
+            request.send("");
+        }
+        
+        // Render a CDMI child (container or data object)
+		function print_child(theresult)
+        {
+            var base_path = document.getElementById('cdmi_location').value;
+            var child_entry = "";
+      
+            newListing = document.getElementById('cdmi_listing').innerHTML;
+      
+            if(theresult.readyState == 3)
+            {
+                newListing = newListing + '<table width="660">';
+
+                cdmi_object = JSON.parse(theresult.responseText);
+
+                // Container listing
+                if(cdmi_object.objectName[cdmi_object.objectName.length - 1] == '/')
+                {
+                    child_entry = '<tr><td valign="top" width="20"><img src="' + folderImage + '"></td><td width="250" valign="top"><a href="#" onclick=\'update_location(\"' + base_path + cdmi_object.objectName + '\"); return false\'>' + cdmi_object.objectName + '</a></td><td width="200">' + cdmi_object.metadata.cdmi_mtime + '</td><td width="100">-</td><td width="18"><a href="#" onclick=\'delete_object(\"' + cdmi_object.objectName + '\"); return false\'><img src="' + deleteImage + '"></a></td></tr>'
+                       
+                    newListing = newListing + child_entry;
+                }
+                else
+                {
+                    child_entry = '<tr><td valign="top" width="20"><img src="' + fileImage + '"></td><td width="250" valign="top"><a href="' + base_path + cdmi_object.objectName + '">' + cdmi_object.objectName + '</a></td><td width="200">' + cdmi_object.metadata.cdmi_mtime + '</td><td width="100">' + cdmi_object.metadata.cdmi_size + '</td><td width="18"><a href="#" onclick=\'delete_object(\"' + cdmi_object.objectName + '\"); return false\'><img src="' + deleteImage + '"></a></td></tr>'
+                       
+                    newListing = newListing + child_entry;
+                }
+                
+                newListing = newListing + '</th></tr></table>';
+                document.getElementById('cdmi_listing').innerHTML = newListing;
+            }
+        }
+
+        function update_location(newURL)
+        {
+            document.getElementById('cdmi_location').value = newURL;
+            list_container();
+        }
+
+        function create_container()
+        {
+            var containerName = document.getElementById('container_create').value;
+            var xhr;
+                        
+            xhr = new XMLHttpRequest();
+            xhr.addEventListener("load", function () {
+                document.getElementById("upload-progress").innerHTML = "Created.";
+                update_location(document.getElementById('cdmi_location').value);
+            }, false);
+
+            xhr.open("PUT", document.getElementById('cdmi_location').value + containerName + "/", true);
+            xhr.setRequestHeader("Content-Type", "application/cdmi-container");
+            xhr.setRequestHeader("X-CDMI-Specification-Version", "1.0.2");
+            xhr.send("{}");
+        }
+
+        function delete_object(theObjectName)
+        {
+            var xhr;
+                        
+            xhr = new XMLHttpRequest();
+            xhr.addEventListener("load", function () {
+                update_location(document.getElementById('cdmi_location').value);
+            }, false);
+
+            xhr.open("DELETE", document.getElementById('cdmi_location').value + theObjectName, true);
+            xhr.setRequestHeader("X-CDMI-Specification-Version", "1.0.2");
+            xhr.send("");
+        }
+
+        function uploadFile(file)
+        {
+            var xhr;
+                        
+            xhr = new XMLHttpRequest();
+            xhr.addEventListener("load", function () {
+                document.getElementById("upload-progress").innerHTML = "Uploaded.";
+                update_location(document.getElementById('cdmi_location').value);
+            }, false);
+
+            xhr.open("PUT", document.getElementById('cdmi_location').value + file.name, true);
+            xhr.setRequestHeader("Content-Type", "application/octet-stream");
+            xhr.send(file);
+            document.getElementById("upload-progress").innerHTML = "Uploading...";
+        }
+        
+        function traverseFiles(files)
+        {
+            if (typeof files !== "undefined") {
+                for (var i=0, l=files.length; i<l; i++) {
+                    uploadFile(files[i]);
+                }
+            }
+        }
+    </script>  
+
+    <body>
+    <table width="660">
+        <tr><td colspan="2" bgcolor="black"></td></tr>
+        <tr><td colspan="2">
+            <div style="font-size: 20px;">Index of: <input style="font-size: 20px;" id='cdmi_location' size=54 value=""><button style="font-size: 21px;" onclick='list_container()'>Go</button></div>
+        </tr></td>
+        <tr><td colspan="2" bgcolor="black"></tr></td>
+        <tr><td colspan="2"><div id='cdmi_listing'></div></tr></td>
+        <tr><td colspan="2" bgcolor="black"></td></tr>
+        <tr><td>
+            <div style="font-size: 20px">Upload file(s):<input style="font-size: 20px;" id="files-upload" type="file" multiple></div>
+        </td><td>
+            <div style="font-size: 20px" id='upload-progress'>Ready</div>
+        </td></tr>
+        <tr><td colspan="2" bgcolor="black"></td></tr><tr><td colspan="2">
+            <div style="font-size: 20px;">New Container: <input style="font-size: 20px;" id='container_create' size=44 value=""><button style="font-size: 21px;" onclick='create_container()'>Create</button></div>
+        </td></tr>
+        <tr><td colspan="2" bgcolor="black"></td></tr>
+        <tr><td colspan="2">   
+            <table width="100%"><tr><td width="50%"><div style="font-size: 8px">Copyright (c) - 2014, NetApp, Inc.  All rights reserved.</div></td><td align="right" width="50%"><div style="font-size: 8px">CDMI Explorer v1.3.3 2014-09-17</div></td></tr></table>
+        </td></tr>
+    </table>
+</body>
+</html>
