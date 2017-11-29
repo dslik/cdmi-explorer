@@ -70,7 +70,6 @@ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT
 STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-[web]: http://larsjung.de/jquery-fracs/
 [github]: https://github.com/dslik/CDMI-Explorer
 
 [license-img]: http://img.shields.io/badge/license-BSD-a0a060.svg?style=flat-square
