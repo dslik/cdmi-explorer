@@ -22,6 +22,18 @@ accessing it through a web browser.
 
 ## Releases
 
+### 1.5.0 Release
+
+Release for 2018 Storage Developer's Conference.
+
+The following features have been added:
+
+* Mimetypes for uploaded files
+* Viewing of CDMI representations of objects
+* Editing of CDMI representations of objects
+
+CDMI Explorer has been tested in Safari 11 and FireFox 58.
+
 ### 1.3.3 Release
 
 First public release.
@@ -38,8 +50,6 @@ The following features are under consideration for addition in a future release:
 
 * Enabling/disabling of functionality based on capabilities
 * Object Inspector - Capability view
-* Object Inspector - Metadata view
-* Object Inspector - Metadata addition/modification
 
 ## License
 Clear BSD License
