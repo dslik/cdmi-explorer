@@ -297,6 +297,38 @@
 					document.getElementById('listing_table').innerHTML = newListing;
 				}
 			}
+
+			if(theresult.readyState == 4)
+			{
+				if(theresult.status == 403)
+				{
+					var requestURL = theresult.responseURL
+					requestURL = requestURL.substring(0, requestURL.indexOf("?"))
+
+					if(requestURL[requestURL.length - 1] == '/')
+					{
+						var requestObject = requestURL.substring(0, requestURL.length - 1)
+						requestObject = requestObject.substring(requestObject.lastIndexOf("/") + 1, requestObject.length) + "/"
+
+						child_entry = '<tr><td valign="bottom" width="18"><img src="' + folderImage + '"></td><td valign="bottom"><a href="#" onclick=\'update_location(\"' + base_path + requestObject + '\"); return false\'>' + requestObject + '</a></td><td width="200" valign="bottom">application/cdmi-container</td><td width="200" valign="bottom">' + "-" + '</td><td width="80" valign="bottom">-</td><td width="18"><img src="' + lockImage + '"></td><td width="18"></td><td width="18"></td></tr>'
+						   
+						newListing = newListing + child_entry;
+					}
+					else
+					{
+						var fileIcon = unknownImage;
+						
+						var requestObject = requestURL
+						requestObject = requestObject.substring(requestObject.lastIndexOf("/") + 1, requestObject.length)
+						
+						child_entry = '<tr><td valign="bottom" width="18"><img src="' + fileIcon + '"></td><td valign="bottom"><a href="' + base_path + requestObject + '">' + requestObject + '</a></td><td width="200" valign="bottom">' + "-" + '</td><td width="200" valign="bottom">' + "-" + '</td><td width="80" valign="bottom">' + "-" + '</td><td width="18"><img src="' + lockImage + '"></td><td width="18"></td><td width="18"></td></tr>'
+						   
+						newListing = newListing + child_entry;
+					}
+					
+					document.getElementById('listing_table').innerHTML = newListing;
+				}
+			}
 		}
 
 		function update_location(newURL)
