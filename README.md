@@ -20,6 +20,9 @@ Functionality supported includes:
 The CDMI Explorer is deployed by uploading it to a CDMI server, then
 accessing it through a web browser.
 
+![image](https://github.com/dslik/cdmi-explorer/assets/5757591/b0fc4fb2-44d9-4d8e-8aec-fd3a96cdbf47)
+
+
 ## Releases
 
 ### 1.5.0 Release
